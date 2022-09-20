@@ -11,6 +11,7 @@
 		040079CE28D9BFAC00E3D549 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040079CD28D9BFAC00E3D549 /* ContentView.swift */; };
 		040079D028D9BFAD00E3D549 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 040079CF28D9BFAD00E3D549 /* Assets.xcassets */; };
 		040079D328D9BFAD00E3D549 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 040079D228D9BFAD00E3D549 /* Preview Assets.xcassets */; };
+		040079DA28D9C07B00E3D549 /* AnimatorViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040079D928D9C07B00E3D549 /* AnimatorViewRepresentable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		040079CD28D9BFAC00E3D549 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		040079CF28D9BFAD00E3D549 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		040079D228D9BFAD00E3D549 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		040079D928D9C07B00E3D549 /* AnimatorViewRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnimatorViewRepresentable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +55,7 @@
 			children = (
 				040079CB28D9BFAC00E3D549 /* swiftUIDynamicAnimatorDemoApp.swift */,
 				040079CD28D9BFAC00E3D549 /* ContentView.swift */,
+				040079D928D9C07B00E3D549 /* AnimatorViewRepresentable.swift */,
 				040079CF28D9BFAD00E3D549 /* Assets.xcassets */,
 				040079D128D9BFAD00E3D549 /* Preview Content */,
 			);
@@ -137,6 +140,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				040079DA28D9C07B00E3D549 /* AnimatorViewRepresentable.swift in Sources */,
 				040079CE28D9BFAC00E3D549 /* ContentView.swift in Sources */,
 				040079CC28D9BFAC00E3D549 /* swiftUIDynamicAnimatorDemoApp.swift in Sources */,
 			);
@@ -195,7 +199,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -249,7 +253,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;

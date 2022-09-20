@@ -8,9 +8,42 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var play = false
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        let customScroll = AnimatorViewRepresentable(playing: $play)
+        return VStack {
+            GeometryReader { geo in
+                customScroll
+                    .onAppear {
+                        customScroll.coordinator.size = geo.size
+                    }
+            }
+            
+            HStack{
+                Spacer()
+                Button {
+                    customScroll.prev()
+                } label: {
+                    Text("Prev")
+                }
+                
+                Spacer()
+                Button {
+                    customScroll.playOrPause()
+                } label: {
+                    Text(play ? "Pause" : "Play")
+                }
+                
+                Spacer()
+                Button {
+                    customScroll.next()
+                } label: {
+                    Text("Next")
+                }
+                Spacer()
+            }
+            .background(Color.white)
+        }
     }
 }
 
