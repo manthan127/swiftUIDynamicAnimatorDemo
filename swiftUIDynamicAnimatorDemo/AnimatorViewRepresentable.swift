@@ -13,17 +13,19 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
     @Binding var playing: Bool
     
     var coordinator: Coordinator {
-        AnimatorViewRepresentable.coordinator
+        Self.coordinator
     }
     
     func makeUIView(context: Context) -> UIView {
-        AnimatorViewRepresentable.coordinator = context.coordinator
-        context.coordinator.setUpView()
-        
+        Self.coordinator = context.coordinator
+        context.coordinator.setView()
+        view.addSubview(context.coordinator.stack)
+        context.coordinator.setUpAnimator()
         return view
     }
     
-    func updateUIView(_ uiView: UIView, context: Context) {}
+    func updateUIView(_ uiView: UIView, context: Context) {
+    }
     
     func playOrPause() {
         if playing {
@@ -58,13 +60,19 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         
         var stack: UIStackView!
         
-        private var totalHeight: CGFloat!
+        var totalHeight: CGFloat!
         
         init(parent: AnimatorViewRepresentable) {
             self.parent = parent
         }
         
-        func setUpView() {
+        func setView() {
+            let p = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+            p.toolbarItems = Array(
+                repeating: UIBarButtonItem(image: UIImage(systemName: "chevron.right"), style: .plain, target: nil, action: nil),
+                count: 3)
+            
+            
             let scriptTitle = UILabel()
             scriptTitle.text = "Title"
             scriptTitle.font = UIFont(descriptor: UIFontDescriptor(), size: 33)
@@ -76,21 +84,19 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
             
             let titleHeight = scriptTitle.text!.height(withConstrainedWidth: size.width, font: scriptTitle.font)
             let contentHeight = content.text!.height(withConstrainedWidth: size.width, font: content.font)
-            totalHeight = contentHeight + titleHeight
+            totalHeight = contentHeight + titleHeight + 400
             
-            stack = UIStackView(frame: CGRect(x: 0, y: 0, width: size.width, height: totalHeight))
+            stack = UIStackView(frame: CGRect(origin: CGPoint(), size: CGSize(width: size.width, height: totalHeight)))
             stack.axis = .vertical
+            stack.addArrangedSubview(p.view)
             stack.addArrangedSubview(scriptTitle)
             stack.addArrangedSubview(content)
             stack.backgroundColor = .red
             
+            coordinator.totalHeight = totalHeight
             let panGesture = UIPanGestureRecognizer()
             panGesture.addTarget(self, action: #selector(viewDragged(_ :)))
-            stack.addGestureRecognizer(panGesture)
-            
-            parent.view.addSubview(stack)
-            
-            setUpAnimator()
+            stack?.addGestureRecognizer(panGesture)
         }
         
         func setUpAnimator() {
@@ -186,8 +192,9 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         }
         
         func collisionBehavior(_ behavior: UICollisionBehavior, beganContactFor item: UIDynamicItem, withBoundaryIdentifier identifier: NSCopying?, at p: CGPoint) {
-            print("collision")
-            stop()
+            DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
+                self.stop()
+            }
             parent.playing = false
         }
     }
