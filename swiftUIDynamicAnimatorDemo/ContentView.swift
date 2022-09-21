@@ -12,6 +12,16 @@ struct ContentView: View {
     var body: some View {
         let customScroll = AnimatorViewRepresentable(playing: $play)
         return VStack {
+            
+            TabView {
+                ForEach(0..<6) { _ in
+                    Image(systemName: "chevron.right")
+                        .resizable()
+                }
+            }
+            .tabViewStyle(PageTabViewStyle())
+            .frame(height: 400)
+            
             GeometryReader { geo in
                 customScroll
                     .onAppear {

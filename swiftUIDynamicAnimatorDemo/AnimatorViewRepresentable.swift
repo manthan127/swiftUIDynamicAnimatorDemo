@@ -46,7 +46,7 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         Coordinator(parent: self)
     }
     
-    class Coordinator: NSObject, UICollisionBehaviorDelegate, UIDynamicAnimatorDelegate {
+    class Coordinator: NSObject, UICollisionBehaviorDelegate {
         let parent: AnimatorViewRepresentable
         
         var size = UIScreen.main.bounds.size
@@ -77,7 +77,6 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
             let titleHeight = scriptTitle.text!.height(withConstrainedWidth: size.width, font: scriptTitle.font)
             let contentHeight = content.text!.height(withConstrainedWidth: size.width, font: content.font)
             totalHeight = contentHeight + titleHeight
-            
             
             stack = UIStackView(frame: CGRect(x: 0, y: 0, width: size.width, height: totalHeight))
             stack.axis = .vertical
@@ -117,7 +116,6 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
                 )
             )
             collision.collisionDelegate = self
-            animator.delegate = self
         }
         
         @objc func viewDragged(_ sender: UIPanGestureRecognizer) {
@@ -154,10 +152,7 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         }
         
         func stop() {
-            print("stoped")
-            print(animator.behaviors.count)
             animator.removeAllBehaviors()
-            print(animator.behaviors.count)
         }
         
         func prev() {
@@ -195,8 +190,6 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
             stop()
             parent.playing = false
         }
-        
-//        collisionBehavior
     }
 }
 
