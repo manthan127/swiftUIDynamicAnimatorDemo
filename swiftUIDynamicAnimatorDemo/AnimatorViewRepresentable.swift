@@ -78,7 +78,7 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
             
             let titleHeight = scriptTitle.text!.height(withConstrainedWidth: size.width, font: scriptTitle.font)
             let contentHeight = content.text!.height(withConstrainedWidth: size.width, font: content.font)
-            totalHeight = contentHeight + titleHeight + 400
+            totalHeight = contentHeight + titleHeight
             
             stack = UIStackView(frame: CGRect(origin: CGPoint(), size: CGSize(width: size.width, height: totalHeight)))
             stack.axis = .vertical
