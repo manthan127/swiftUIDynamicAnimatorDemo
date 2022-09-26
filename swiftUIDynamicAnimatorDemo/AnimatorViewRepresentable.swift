@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AnimatorViewRepresentable: UIViewRepresentable {
     let view = UIView()
+    let p = MyTestViewController()
     static var coordinator: Coordinator!
     @Binding var playing: Bool
     
@@ -21,11 +22,11 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         context.coordinator.setView()
         view.addSubview(context.coordinator.stack)
         context.coordinator.setUpAnimator()
+        
         return view
     }
     
-    func updateUIView(_ uiView: UIView, context: Context) {
-    }
+    func updateUIView(_ uiView: UIView, context: Context) {}
     
     func playOrPause() {
         if playing {
@@ -61,12 +62,27 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         var stack: UIStackView!
         
         var totalHeight: CGFloat!
+        var pageViewControllers = [UIViewController]()
         
         init(parent: AnimatorViewRepresentable) {
             self.parent = parent
         }
         
-        func setView() {            
+        func setView() {
+            let pageController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+            pageController.dataSource = self
+            pageController.delegate = self
+            
+            let x = UIViewController()
+            x.view.backgroundColor = .red
+            let y = UIViewController()
+            y.view.backgroundColor = .green
+
+            pageViewControllers = [x]
+            pageController.setViewControllers(self.pageViewControllers, direction: .forward, animated: true)
+
+            pageViewControllers.append(y)
+            
             let scriptTitle = UILabel()
             scriptTitle.text = "Title"
             scriptTitle.font = UIFont(descriptor: UIFontDescriptor(), size: 33)
@@ -78,13 +94,13 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
             
             let titleHeight = scriptTitle.text!.height(withConstrainedWidth: size.width, font: scriptTitle.font)
             let contentHeight = content.text!.height(withConstrainedWidth: size.width, font: content.font)
-            totalHeight = contentHeight + titleHeight
+            totalHeight = contentHeight + titleHeight + 400
             
             stack = UIStackView(frame: CGRect(origin: CGPoint(), size: CGSize(width: size.width, height: totalHeight)))
             stack.axis = .vertical
+            stack.addArrangedSubview(parent.p.view)
             stack.addArrangedSubview(scriptTitle)
             stack.addArrangedSubview(content)
-            stack.backgroundColor = .red
             
             coordinator.totalHeight = totalHeight
             let panGesture = UIPanGestureRecognizer()
@@ -185,10 +201,191 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         }
         
         func collisionBehavior(_ behavior: UICollisionBehavior, beganContactFor item: UIDynamicItem, withBoundaryIdentifier identifier: NSCopying?, at p: CGPoint) {
-            DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
+            DispatchQueue.main.async {
                 self.stop()
             }
             parent.playing = false
         }
+    }
+}
+
+extension AnimatorViewRepresentable.Coordinator: UIPageViewControllerDataSource, UIPageViewControllerDelegate {
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        guard let ind = pageViewControllers.firstIndex(of: viewController),
+              ind > 0 else {
+            return nil
+        }
+
+        return pageViewControllers[ind-1]
+    }
+
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        guard let ind = pageViewControllers.firstIndex(of: viewController),
+              ind < (pageViewControllers.count-1) else {
+            return nil
+        }
+
+        return pageViewControllers[ind+1]
+    }
+    
+    func presentationCount(for pageViewController: UIPageViewController) -> Int {
+        2
+    }
+}
+
+
+class ExampleViewController: UIViewController {
+
+    let theLabel: UILabel = {
+        let v = UILabel()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.backgroundColor = .white
+        v.textAlignment = .center
+        return v
+    }()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.addSubview(theLabel)
+        NSLayoutConstraint.activate([
+            theLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            theLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            theLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9),
+        ])
+    }
+}
+// example Page View Controller
+let colors: [UIColor] = [
+    .red,
+    .green,
+    .blue,
+    .cyan,
+    .yellow,
+    .orange
+]
+class MyPageViewController: UIPageViewController {
+    var pages: [UIViewController] = [UIViewController]()
+
+    override init(transitionStyle style: UIPageViewController.TransitionStyle, navigationOrientation: UIPageViewController.NavigationOrientation, options: [UIPageViewController.OptionsKey : Any]? = nil) {
+        super.init(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        dataSource = self
+        delegate = nil
+
+        // instantiate "pages"
+        for i in 0..<colors.count {
+            let vc = ExampleViewController()
+            vc.theLabel.text = "Page: \(i)"
+            vc.view.backgroundColor = colors[i]
+            pages.append(vc)
+        }
+
+        setViewControllers([pages[0]], direction: .forward, animated: false, completion: nil)
+    }
+}
+
+// typical Page View Controller Data Source
+extension MyPageViewController: UIPageViewControllerDataSource {
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+
+        guard let viewControllerIndex = pages.firstIndex(of: viewController) else { return nil }
+
+        let previousIndex = viewControllerIndex - 1
+
+        guard previousIndex >= 0 else { return pages.last }
+
+        guard pages.count > previousIndex else { return nil }
+
+        return pages[previousIndex]
+    }
+
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        guard let viewControllerIndex = pages.firstIndex(of: viewController) else { return nil }
+
+        let nextIndex = viewControllerIndex + 1
+
+        guard nextIndex < pages.count else { return pages.first }
+
+        guard pages.count > nextIndex else { return nil }
+
+        return pages[nextIndex]
+    }
+}
+
+// typical Page View Controller Delegate
+extension MyPageViewController: UIPageViewControllerDelegate {
+
+    // if you do NOT want the built-in PageControl (the "dots"), comment-out these funcs
+
+    func presentationCount(for pageViewController: UIPageViewController) -> Int {
+        return pages.count
+    }
+
+    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
+
+        guard let firstVC = pageViewController.viewControllers?.first else {
+            return 0
+        }
+        guard let firstVCIndex = pages.firstIndex(of: firstVC) else {
+            return 0
+        }
+
+        return firstVCIndex
+    }
+}
+//
+class MyTestViewController: UIViewController {
+
+    let myContainerView: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.backgroundColor = .gray
+        return v
+    }()
+
+    var thePageVC: MyPageViewController!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // add myContainerView
+        view.addSubview(myContainerView)
+        
+        NSLayoutConstraint.activate([
+            myContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            myContainerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            myContainerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            myContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+//            myContainerView.heightAnchor.constraint(equalToConstant: 400.0),
+        ])
+
+        // instantiate MyPageViewController and add it as a Child View Controller
+        thePageVC = MyPageViewController()
+        addChild(thePageVC)
+
+        // we need to re-size the page view controller's view to fit our container view
+        thePageVC.view.translatesAutoresizingMaskIntoConstraints = false
+//        UIStackView(arrangedSubviews: [thePageVC.view])
+        // add the page VC's view to our container view
+
+        // constrain it to all 4 sides
+
+        myContainerView.addSubview(thePageVC.view)
+        thePageVC.didMove(toParent: self)
+        NSLayoutConstraint.activate([
+            thePageVC.view.topAnchor.constraint(equalTo: myContainerView.topAnchor, constant: 0.0),
+            thePageVC.view.bottomAnchor.constraint(equalTo: myContainerView.bottomAnchor, constant: 0.0),
+            thePageVC.view.leadingAnchor.constraint(equalTo: myContainerView.leadingAnchor, constant: 0.0),
+            thePageVC.view.trailingAnchor.constraint(equalTo: myContainerView.trailingAnchor, constant: 0.0),
+        ])
     }
 }
