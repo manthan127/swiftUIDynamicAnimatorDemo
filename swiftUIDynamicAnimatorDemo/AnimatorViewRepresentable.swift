@@ -62,27 +62,12 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         var stack: UIStackView!
         
         var totalHeight: CGFloat!
-        var pageViewControllers = [UIViewController]()
         
         init(parent: AnimatorViewRepresentable) {
             self.parent = parent
         }
         
         func setView() {
-            let pageController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
-            pageController.dataSource = self
-            pageController.delegate = self
-            
-            let x = UIViewController()
-            x.view.backgroundColor = .red
-            let y = UIViewController()
-            y.view.backgroundColor = .green
-
-            pageViewControllers = [x]
-            pageController.setViewControllers(self.pageViewControllers, direction: .forward, animated: true)
-
-            pageViewControllers.append(y)
-            
             let scriptTitle = UILabel()
             scriptTitle.text = "Title"
             scriptTitle.font = UIFont(descriptor: UIFontDescriptor(), size: 33)
@@ -209,31 +194,6 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
     }
 }
 
-extension AnimatorViewRepresentable.Coordinator: UIPageViewControllerDataSource, UIPageViewControllerDelegate {
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let ind = pageViewControllers.firstIndex(of: viewController),
-              ind > 0 else {
-            return nil
-        }
-
-        return pageViewControllers[ind-1]
-    }
-
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let ind = pageViewControllers.firstIndex(of: viewController),
-              ind < (pageViewControllers.count-1) else {
-            return nil
-        }
-
-        return pageViewControllers[ind+1]
-    }
-    
-    func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        2
-    }
-}
-
-
 class ExampleViewController: UIViewController {
 
     let theLabel: UILabel = {
@@ -255,7 +215,7 @@ class ExampleViewController: UIViewController {
         ])
     }
 }
-// example Page View Controller
+
 let colors: [UIColor] = [
     .red,
     .green,
@@ -365,7 +325,6 @@ class MyTestViewController: UIViewController {
             myContainerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             myContainerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             myContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-//            myContainerView.heightAnchor.constraint(equalToConstant: 400.0),
         ])
 
         // instantiate MyPageViewController and add it as a Child View Controller
@@ -376,8 +335,6 @@ class MyTestViewController: UIViewController {
         thePageVC.view.translatesAutoresizingMaskIntoConstraints = false
 //        UIStackView(arrangedSubviews: [thePageVC.view])
         // add the page VC's view to our container view
-
-        // constrain it to all 4 sides
 
         myContainerView.addSubview(thePageVC.view)
         thePageVC.didMove(toParent: self)
