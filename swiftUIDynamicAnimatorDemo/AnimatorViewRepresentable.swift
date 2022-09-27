@@ -9,9 +9,22 @@ import SwiftUI
 
 struct AnimatorViewRepresentable: UIViewRepresentable {
     let view = UIView()
-    let p = MyPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+    
+    lazy var p: MyPageViewController = {
+        let views = ["trash", "folder.fill", "mic"]
+            .map {
+                let x = ExampleViewController()
+                x.theLabel.image = UIImage(systemName: $0)
+                return x
+            }
+        let p = MyPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+        p.pages = views
+        return p
+    }()
+    
     static var coordinator: Coordinator!
     @Binding var playing: Bool
+    let script: Script
     
     var coordinator: Coordinator {
         Self.coordinator
@@ -50,7 +63,7 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
     }
     
     class Coordinator: NSObject, UICollisionBehaviorDelegate {
-        let parent: AnimatorViewRepresentable
+        var parent: AnimatorViewRepresentable
         
         var size = UIScreen.main.bounds.size
         
@@ -59,38 +72,50 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         private var collision: UICollisionBehavior!
         private var itemBehavior: UIDynamicItemBehavior!
         
-        var stack: UIStackView!
-        
-        var totalHeight: CGFloat!
+        var stack: UIStackView = UIStackView()
+        var totalHeight: CGFloat = 0
+        var script: Script {
+            parent.script
+        }
         
         init(parent: AnimatorViewRepresentable) {
             self.parent = parent
         }
         
-        func setView() {
+        lazy var scriptTitle: UILabel = {
             let scriptTitle = UILabel()
-            scriptTitle.text = "Title"
-            scriptTitle.font = UIFont(descriptor: UIFontDescriptor(), size: 33)
-            
+            scriptTitle.text = script.title
+            scriptTitle.font = UIFont(descriptor: UIFontDescriptor(), size: CGFloat(script.size+10))
+            return scriptTitle
+        }()
+        
+        lazy var content: UILabel = {
             let content = UILabel()
-            content.text = .longText
-            content.font = UIFont(descriptor: UIFontDescriptor(), size: 23)
+            content.text = script.text
+//            content.textAlignment = NSTextAlignment(rawValue: script.textAlignment.rawValue)//script.textAlignment
+            content.font = UIFont(descriptor: UIFontDescriptor(), size: CGFloat(script.size))
             content.numberOfLines = 0
-            
+            return content
+        }()
+        
+        func setView() {
             let titleHeight = scriptTitle.text!.height(withConstrainedWidth: size.width, font: scriptTitle.font)
             let contentHeight = content.text!.height(withConstrainedWidth: size.width, font: content.font)
-            totalHeight = contentHeight + titleHeight + 400
             
-            stack = UIStackView(frame: CGRect(origin: CGPoint(), size: CGSize(width: size.width, height: totalHeight)))
+            totalHeight += contentHeight + titleHeight
+            if !script.recordings.isEmpty {
+                totalHeight += 400
+                stack.addArrangedSubview(parent.p.view)
+            }
             stack.axis = .vertical
-            stack.addArrangedSubview(parent.p.view)
             stack.addArrangedSubview(scriptTitle)
             stack.addArrangedSubview(content)
             
+            stack.frame = CGRect(origin: CGPoint(), size: CGSize(width: size.width, height: totalHeight))
             coordinator.totalHeight = totalHeight
             let panGesture = UIPanGestureRecognizer()
             panGesture.addTarget(self, action: #selector(viewDragged(_ :)))
-            stack?.addGestureRecognizer(panGesture)
+            stack.addGestureRecognizer(panGesture)
         }
         
         func setUpAnimator() {
@@ -191,99 +216,5 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
             }
             parent.playing = false
         }
-    }
-}
-
-class ExampleViewController: UIViewController {
-    let theLabel: UIImageView = {
-        let v = UIImageView()
-        v.translatesAutoresizingMaskIntoConstraints = false
-        v.backgroundColor = .white
-        return v
-    }()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        view.addSubview(theLabel)
-        NSLayoutConstraint.activate([
-            theLabel.topAnchor.constraint(equalTo: view.topAnchor),
-            theLabel.widthAnchor.constraint(equalTo: view.widthAnchor),
-            theLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 10)
-        ])
-    }
-}
-
-class MyPageViewController: UIPageViewController {
-    let colors: [UIColor] = [
-        .red,
-        .green,
-        .blue,
-        .cyan,
-        .yellow,
-        .orange
-    ]
-    
-    lazy var pages = ["trash", "folder.fill", "folder.badge.person.crop", "mic"]
-        .compactMap{ s -> UIViewController in
-            let x = ExampleViewController()
-            x.theLabel.image = UIImage(systemName: s)
-            x.theLabel.backgroundColor = colors.randomElement() ?? .red
-            return x
-        }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        dataSource = self
-        delegate = nil
-
-        view.backgroundColor = .gray
-        setViewControllers([pages[0]], direction: .forward, animated: false, completion: nil)
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        for view in self.view.subviews {
-            if let _ = view as? UIScrollView {
-                view.frame = self.view.frame
-            } else if let _ = view as? UIPageControl {
-                view.backgroundColor = .clear
-            }
-        }
-    }
-}
-
-extension MyPageViewController: UIPageViewControllerDataSource {
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let viewControllerIndex = pages.firstIndex(of: viewController) else { return nil }
-
-        let previousIndex = viewControllerIndex - 1
-        guard previousIndex >= 0 else { return pages.last }
-
-//        guard pages.count > previousIndex else { return nil }
-
-        return pages[previousIndex]
-    }
-
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let viewControllerIndex = pages.firstIndex(of: viewController) else { return nil }
-
-        let nextIndex = viewControllerIndex + 1
-        guard nextIndex < pages.count else { return pages.first }
-
-//        guard pages.count > nextIndex else { return nil }
-
-        return pages[nextIndex]
-    }
-}
-
-extension MyPageViewController: UIPageViewControllerDelegate {
-    func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        return pages.count
-    }
-
-    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
-        return 0
     }
 }

@@ -9,8 +9,9 @@ import SwiftUI
 
 struct ContentView: View {
     @State var play = false
+    @State var x = Script(title: "HOHO",text: "rtfgv dftcg fghgc cgbv" + .longText, textAlignment: .trailing, size: 17,recordings: [Recording()])
     var body: some View {
-        let customScroll = AnimatorViewRepresentable(playing: $play)
+        let customScroll = AnimatorViewRepresentable(playing: $play, script: x)
         return VStack {
             
             GeometryReader { geo in
