@@ -12,6 +12,9 @@
 		040079D028D9BFAD00E3D549 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 040079CF28D9BFAD00E3D549 /* Assets.xcassets */; };
 		040079D328D9BFAD00E3D549 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 040079D228D9BFAD00E3D549 /* Preview Assets.xcassets */; };
 		040079DA28D9C07B00E3D549 /* AnimatorViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040079D928D9C07B00E3D549 /* AnimatorViewRepresentable.swift */; };
+		04F698BC28E1BC1000548800 /* UILabel+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F698BB28E1BC1000548800 /* UILabel+.swift */; };
+		04F698BE28E1BC1200548800 /* UIScrollView+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F698BD28E1BC1200548800 /* UIScrollView+.swift */; };
+		04F698C028E1BC1800548800 /* UIView+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F698BF28E1BC1800548800 /* UIView+.swift */; };
 		04FEFD7B28DC614000DCA0EC /* StringExtention.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FEFD7A28DC614000DCA0EC /* StringExtention.swift */; };
 /* End PBXBuildFile section */
 
@@ -22,6 +25,9 @@
 		040079CF28D9BFAD00E3D549 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		040079D228D9BFAD00E3D549 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		040079D928D9C07B00E3D549 /* AnimatorViewRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnimatorViewRepresentable.swift; sourceTree = "<group>"; };
+		04F698BB28E1BC1000548800 /* UILabel+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UILabel+.swift"; sourceTree = "<group>"; };
+		04F698BD28E1BC1200548800 /* UIScrollView+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIScrollView+.swift"; sourceTree = "<group>"; };
+		04F698BF28E1BC1800548800 /* UIView+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+.swift"; sourceTree = "<group>"; };
 		04FEFD7A28DC614000DCA0EC /* StringExtention.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtention.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -59,6 +65,9 @@
 				040079CD28D9BFAC00E3D549 /* ContentView.swift */,
 				040079D928D9C07B00E3D549 /* AnimatorViewRepresentable.swift */,
 				04FEFD7A28DC614000DCA0EC /* StringExtention.swift */,
+				04F698BB28E1BC1000548800 /* UILabel+.swift */,
+				04F698BD28E1BC1200548800 /* UIScrollView+.swift */,
+				04F698BF28E1BC1800548800 /* UIView+.swift */,
 				040079CF28D9BFAD00E3D549 /* Assets.xcassets */,
 				040079D128D9BFAD00E3D549 /* Preview Content */,
 			);
@@ -145,6 +154,9 @@
 			files = (
 				040079DA28D9C07B00E3D549 /* AnimatorViewRepresentable.swift in Sources */,
 				04FEFD7B28DC614000DCA0EC /* StringExtention.swift in Sources */,
+				04F698C028E1BC1800548800 /* UIView+.swift in Sources */,
+				04F698BC28E1BC1000548800 /* UILabel+.swift in Sources */,
+				04F698BE28E1BC1200548800 /* UIScrollView+.swift in Sources */,
 				040079CE28D9BFAC00E3D549 /* ContentView.swift in Sources */,
 				040079CC28D9BFAC00E3D549 /* swiftUIDynamicAnimatorDemoApp.swift in Sources */,
 			);
