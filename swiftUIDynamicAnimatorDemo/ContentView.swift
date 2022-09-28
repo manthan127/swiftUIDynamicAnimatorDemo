@@ -9,17 +9,19 @@ import SwiftUI
 
 struct ContentView: View {
     @State var play = false
-    @State var x = Script(title: "HOHO",text: "rtfgv dftcg fghgc cgbv" + .longText, textAlignment: .trailing, size: 17,recordings: [Recording()])
+    @State var x = Script(title: "HOHO",text: "rtfgv dftcg fghgc cgbv" + .longText, textAlignment: .leading, size: 23,recordings: [Recording(), Recording(), Recording()])
+    
     var body: some View {
         let customScroll = AnimatorViewRepresentable(playing: $play, script: x)
-        return VStack {
+        return VStack(spacing: 0) {
             
             GeometryReader { geo in
                 customScroll
                     .onAppear {
                         customScroll.coordinator.size = geo.size
+                        customScroll.setUP()
                     }
-            }
+            }.mask{Color.black}
             
             HStack{
                 Spacer()
@@ -44,7 +46,6 @@ struct ContentView: View {
                 }
                 Spacer()
             }
-            .background(Color.white)
         }
     }
 }

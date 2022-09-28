@@ -11,7 +11,8 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
     let view = UIView()
     
     lazy var p: MyPageViewController = {
-        let views = ["trash", "folder.fill", "mic"]
+//        temp images data
+        let views = ["trash", "folder.fill", "mic"][0..<script.recordings.count]
             .map {
                 let x = ExampleViewController()
                 x.theLabel.image = UIImage(systemName: $0)
@@ -32,14 +33,17 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
     
     func makeUIView(context: Context) -> UIView {
         Self.coordinator = context.coordinator
-        context.coordinator.setView()
-        view.addSubview(context.coordinator.stack)
-        context.coordinator.setUpAnimator()
         
         return view
     }
     
     func updateUIView(_ uiView: UIView, context: Context) {}
+    
+    func setUP() {
+        coordinator.setView()
+        view.addSubview(coordinator.stack)
+        coordinator.setUpAnimator()
+    }
     
     func playOrPause() {
         if playing {
@@ -72,7 +76,7 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         private var collision: UICollisionBehavior!
         private var itemBehavior: UIDynamicItemBehavior!
         
-        var stack: UIStackView = UIStackView()
+        let stack: UIStackView = UIStackView()
         var totalHeight: CGFloat = 0
         var script: Script {
             parent.script
@@ -92,7 +96,7 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         lazy var content: UILabel = {
             let content = UILabel()
             content.text = script.text
-//            content.textAlignment = NSTextAlignment(rawValue: script.textAlignment.rawValue)//script.textAlignment
+            content.textAlignment = NSTextAlignment(rawValue: script.textAlignment.rawVal) ?? .left
             content.font = UIFont(descriptor: UIFontDescriptor(), size: CGFloat(script.size))
             content.numberOfLines = 0
             return content
@@ -111,8 +115,52 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
             stack.addArrangedSubview(scriptTitle)
             stack.addArrangedSubview(content)
             
+            let n = script.recordings.count
+            let h: CGFloat = CGFloat(n*50 + (n-1)*10)
+            
+            let VStack = UIStackView()
+            
+            for _ in 0..<script.recordings.count {
+                let x = UILabel()
+                x.text = "some script name"
+                
+                let img = UIImageView(image: UIImage(systemName: "square.and.arrow.up"))
+                
+                let del = UIImageView(image: UIImage(systemName: "trash"))
+                del.tintColor = .red
+                
+                let HStack = UIStackView()
+                HStack.axis = .horizontal
+                HStack.distribution = .fill
+                HStack.spacing = 5
+                
+                
+                for i in [x, del, img] {
+                    HStack.addSubview(i)
+                    HStack.addArrangedSubview(i)
+                }
+                
+                HStack.layer.cornerRadius = 20
+                HStack.layer.borderColor = UIColor.black.cgColor
+                HStack.layer.borderWidth = 3
+                
+                VStack.addSubview(HStack)
+                NSLayoutConstraint.activate([
+                    HStack.heightAnchor.constraint(equalToConstant: 50),
+                    HStack.leadingAnchor.constraint(equalTo: VStack.leadingAnchor, constant: 10),
+                    HStack.trailingAnchor.constraint(equalTo: VStack.trailingAnchor, constant: -10)
+                ])
+                VStack.addArrangedSubview(HStack)
+            }
+            
+            VStack.axis = .vertical
+            VStack.spacing = 12
+            VStack.distribution = .fillEqually
+            
+            stack.addArrangedSubview(VStack)
+            totalHeight += h
+            
             stack.frame = CGRect(origin: CGPoint(), size: CGSize(width: size.width, height: totalHeight))
-            coordinator.totalHeight = totalHeight
             let panGesture = UIPanGestureRecognizer()
             panGesture.addTarget(self, action: #selector(viewDragged(_ :)))
             stack.addGestureRecognizer(panGesture)
@@ -120,16 +168,16 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
         
         func setUpAnimator() {
             animator = UIDynamicAnimator(referenceView: parent.view)
-            
+
             gravity = UIGravityBehavior(items: [stack])
             gravity.gravityDirection = CGVector(dx: 0, dy: -1)
             gravity.magnitude = 0.1
-            
+
             itemBehavior = UIDynamicItemBehavior(items: [stack])
             itemBehavior.resistance = 1
             itemBehavior.angularResistance = 1
             itemBehavior.allowsRotation = false
-            
+
             collision = UICollisionBehavior(items: [stack])
             //MARK: needs improvement(maybe)
             collision.setTranslatesReferenceBoundsIntoBoundary(
@@ -155,7 +203,9 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
                 sender.setTranslation(CGPoint.zero, in: parent.view)
             case .ended:
                 UIView.animate(withDuration: 0.1) {
-                    if self.stack.frame.minY > 0 {
+                    if self.totalHeight < self.parent.view.frame.height {
+                        self.stack.frame.origin.y = 0
+                    } else if self.stack.frame.minY > 0 {
                         self.stack.frame.origin.y = 0
                     } else if self.stack.frame.maxY < self.size.height {
                         self.stack.frame.origin.y = -(self.totalHeight - self.size.height)+1
@@ -215,6 +265,19 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
                 self.stop()
             }
             parent.playing = false
+        }
+    }
+}
+
+extension TextAlignment {
+    var rawVal: Int {
+        switch self {
+        case .leading:
+            return 0
+        case .center:
+            return 1
+        case .trailing:
+            return 2
         }
     }
 }
