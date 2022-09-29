@@ -8,21 +8,6 @@
 import SwiftUI
 
 struct AnimatorViewRepresentable: UIViewRepresentable {
-    let view = UIView()
-    
-    lazy var p: MyPageViewController = {
-        //        temp images data
-        let views = ["trash", "folder.fill", "mic"][0..<script.recordings.count]
-            .map {
-                let x = ExampleViewController()
-                x.theLabel.image = UIImage(systemName: $0)
-                return x
-            }
-        let p = MyPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
-        p.pages = views
-        return p
-    }()
-    
     static var coordinator: Coordinator!
     @Binding var playing: Bool
     let script: Script
@@ -30,6 +15,21 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
     var coordinator: Coordinator {
         Self.coordinator
     }
+    
+    let view = UIView()
+    lazy var p: UIView = {
+        let x = UIHostingController(
+            rootView:
+                TabView {
+                    ForEach(["trash", "folder.fill", "mic"], id: \.self) {
+                        Image(systemName: $0)
+                    }
+                }
+                .tabViewStyle(PageTabViewStyle())
+                .background(Color.red)
+        )
+        return x.view ?? UILabel()
+    }()
     
     func makeUIView(context: Context) -> UIView {
         Self.coordinator = context.coordinator
@@ -171,7 +171,7 @@ extension AnimatorViewRepresentable.Coordinator: UICollisionBehaviorDelegate{
         totalHeight += contentHeight + titleHeight
         if !script.recordings.isEmpty {
             totalHeight += 400
-            stack.addArrangedSubview(parent.p.view)
+            stack.addArrangedSubview(parent.p)
         }
         stack.axis = .vertical
         stack.addArrangedSubview(scriptTitle)
