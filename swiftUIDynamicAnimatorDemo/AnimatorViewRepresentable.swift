@@ -17,19 +17,6 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
     }
     
     let view = UIView()
-    lazy var p: UIView = {
-        let x = UIHostingController(
-            rootView:
-                TabView {
-                    ForEach(["trash", "folder.fill", "mic"], id: \.self) {
-                        Image(systemName: $0)
-                    }
-                }
-                .tabViewStyle(PageTabViewStyle())
-                .background(Color.red)
-        )
-        return x.view ?? UILabel()
-    }()
     
     func makeUIView(context: Context) -> UIView {
         Self.coordinator = context.coordinator
@@ -67,8 +54,95 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
     
     class Coordinator: NSObject {
         var parent: AnimatorViewRepresentable
-        
         var size = UIScreen.main.bounds.size
+        
+        var totalHeight: CGFloat = 0
+        var script: Script {
+            parent.script
+        }
+        
+        init(parent: AnimatorViewRepresentable) {
+            self.parent = parent
+        }
+        
+        let stack: UIStackView = UIStackView()
+        
+        lazy var scriptTitle: UILabel = {
+            let scriptTitle = UILabel()
+            scriptTitle.text = script.title
+            scriptTitle.font = UIFont(descriptor: UIFontDescriptor(), size: CGFloat(script.size+10))
+            return scriptTitle
+        }()
+        
+        lazy var content: UILabel = {
+            let content = UILabel()
+            content.text = script.text
+            content.textAlignment = NSTextAlignment(rawValue: script.textAlignment.rawVal) ?? .left
+            content.font = UIFont(descriptor: UIFontDescriptor(), size: CGFloat(script.size))
+            content.numberOfLines = 0
+            return content
+        }()
+        
+        lazy var p: UIViewController = {
+            return UIHostingController(
+                rootView:
+                    TabView {
+                        ForEach(script.recordings.map{$0.path}, id: \.self) { i in
+                            Image(systemName: i)
+                                .resizable()
+                            .onTapGesture {
+                                print("navigate tab", i)
+                            }
+                        }
+                    }
+                    .tabViewStyle(PageTabViewStyle())
+                    .background(Color.orange)
+            )
+        }()
+        
+        lazy var v: UIViewController = {
+            let x = UIHostingController(
+                rootView:
+                    VStack {
+                        ForEach(script.recordings, id: \.self){ recording in
+                            ZStack{
+                                HStack(alignment: .center, spacing: 24) {
+                                    Text(recording.path)
+//                                    .font(.opensan(size: 16))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .lineLimit(2)
+                                        .multilineTextAlignment(.leading)
+                                    
+                                    Button {
+                                        print("delete", recording.path)
+                                    } label: {
+                                        Image(systemName: "trash")
+                                    }
+                                    
+                                    Button {
+                                        print("share", recording.path)
+                                    } label: {
+                                        Image(systemName: "square")
+                                    }
+                                }
+                                .foregroundColor(.accentColor)
+                                .padding(.vertical)
+                                .padding(.horizontal, 24)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.accentColor, lineWidth: 1)
+                                )
+                                .background(Color.white)
+                                .onTapGesture {
+                                    print("navigate row", recording.path)
+                                }
+                            }
+                            .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+            )
+            return x
+        }()
         
         private lazy var animator: UIDynamicAnimator = {
             UIDynamicAnimator(referenceView: parent.view)
@@ -102,63 +176,8 @@ struct AnimatorViewRepresentable: UIViewRepresentable {
             itemBehavior.allowsRotation = false
             itemBehavior.resistance = 3
             
-            itemBehavior.action = {
-                self.stack.frame.origin.x = 0
-                var sholdContinue = false
-                if self.stack.frame.minY > 0 {
-                    UIView.animate(withDuration: 0.1) {
-                        self.stack.frame.origin.y = 0
-                    }
-                    self.animator.removeBehavior(self.itemBehavior)
-                    sholdContinue = true
-                } else if self.stack.frame.maxY < self.size.height {
-                    UIView.animate(withDuration: 0.1) {
-                        self.stack.frame.origin.y = -(self.totalHeight - self.size.height)+1
-                    }
-                    self.animator.removeBehavior(self.itemBehavior)
-                    self.stop()
-                    self.parent.playing = false
-                }
-                
-                if self.parent.playing {
-                    if sholdContinue {
-                        self.start()
-                    }
-                    let x = abs(self.itemBehavior.linearVelocity(for: self.stack).y)
-                    if x < 15 {
-                        self.animator.removeBehavior(self.itemBehavior)
-                        
-                        self.start()
-                    }
-                }
-            }
+            itemBehavior.action = itemBehaviorAction
             return itemBehavior
-        }()
-        
-        let stack: UIStackView = UIStackView()
-        var totalHeight: CGFloat = 0
-        var script: Script {
-            parent.script
-        }
-        
-        init(parent: AnimatorViewRepresentable) {
-            self.parent = parent
-        }
-        
-        lazy var scriptTitle: UILabel = {
-            let scriptTitle = UILabel()
-            scriptTitle.text = script.title
-            scriptTitle.font = UIFont(descriptor: UIFontDescriptor(), size: CGFloat(script.size+10))
-            return scriptTitle
-        }()
-        
-        lazy var content: UILabel = {
-            let content = UILabel()
-            content.text = script.text
-            content.textAlignment = NSTextAlignment(rawValue: script.textAlignment.rawVal) ?? .left
-            content.font = UIFont(descriptor: UIFontDescriptor(), size: CGFloat(script.size))
-            content.numberOfLines = 0
-            return content
         }()
     }
 }
@@ -171,51 +190,16 @@ extension AnimatorViewRepresentable.Coordinator: UICollisionBehaviorDelegate{
         totalHeight += contentHeight + titleHeight
         if !script.recordings.isEmpty {
             totalHeight += 400
-            stack.addArrangedSubview(parent.p)
+            stack.addArrangedSubview(p.view)
         }
         stack.axis = .vertical
         stack.addArrangedSubview(scriptTitle)
         stack.addArrangedSubview(content)
         
         let n = script.recordings.count
-        let h: CGFloat = CGFloat(n*50 + (n-1)*10)
+        let h: CGFloat = CGFloat(n*70 + (n-1)*10)
         
-        let VStack = UIStackView()
-        VStack.axis = .vertical
-        VStack.spacing = 12
-        VStack.distribution = .fillEqually
-        
-        let x = UILabel()
-        x.text = "some script name"
-        let img = UIImageView(image: UIImage(systemName: "square.and.arrow.up"))
-        
-        let del = UIImageView(image: UIImage(systemName: "trash"))
-        del.tintColor = .red
-        for _ in 0..<script.recordings.count {
-            let HStack = UIStackView()
-            HStack.axis = .horizontal
-            HStack.distribution = .fill
-            HStack.spacing = 5
-            
-            for i in [x, del, img] {
-                HStack.addSubview(i)
-                HStack.addArrangedSubview(i)
-            }
-            
-            HStack.layer.cornerRadius = 20
-            HStack.layer.borderColor = UIColor.black.cgColor
-            HStack.layer.borderWidth = 3
-            
-            VStack.addSubview(HStack)
-            NSLayoutConstraint.activate([
-                HStack.heightAnchor.constraint(equalToConstant: 50),
-//                HStack.leadingAnchor.constraint(equalTo: VStack.leadingAnchor, constant: 10),
-//                HStack.trailingAnchor.constraint(equalTo: VStack.trailingAnchor, constant: -10)
-            ])
-            VStack.addArrangedSubview(HStack)
-        }
-        
-        stack.addArrangedSubview(VStack)
+        stack.addArrangedSubview(v.view)
         totalHeight += h
         
         stack.frame = CGRect(origin: CGPoint(), size: CGSize(width: size.width, height: totalHeight))
@@ -223,6 +207,37 @@ extension AnimatorViewRepresentable.Coordinator: UICollisionBehaviorDelegate{
         let panGesture = UIPanGestureRecognizer()
         panGesture.addTarget(self, action: #selector(viewDragged(_ :)))
         stack.addGestureRecognizer(panGesture)
+    }
+    
+    func itemBehaviorAction() {
+        self.stack.frame.origin.x = 0
+        var sholdContinue = false
+        if self.stack.frame.minY > 0 {
+            UIView.animate(withDuration: 0.1) {
+                self.stack.frame.origin.y = 0
+            }
+            self.animator.removeBehavior(self.itemBehavior)
+            sholdContinue = true
+        } else if self.stack.frame.maxY < self.size.height {
+            UIView.animate(withDuration: 0.1) {
+                self.stack.frame.origin.y = -(self.totalHeight - self.size.height)+1
+            }
+            self.animator.removeBehavior(self.itemBehavior)
+            self.stop()
+            self.parent.playing = false
+        }
+        
+        if self.parent.playing {
+            if sholdContinue {
+                self.start()
+            }
+            let x = abs(self.itemBehavior.linearVelocity(for: self.stack).y)
+            if x < 15 {
+                self.animator.removeBehavior(self.itemBehavior)
+                
+                self.start()
+            }
+        }
     }
     
     func collisionBehavior(_ behavior: UICollisionBehavior, beganContactFor item: UIDynamicItem, withBoundaryIdentifier identifier: NSCopying?, at p: CGPoint) {

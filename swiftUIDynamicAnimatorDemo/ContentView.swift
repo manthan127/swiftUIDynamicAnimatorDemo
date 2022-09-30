@@ -9,10 +9,10 @@ import SwiftUI
 
 struct ContentView: View {
     @State var play = false
-    @State var x = Script(title: "HOHO",text: "rtfgv dftcg fghgc cgbv" + .longText, textAlignment: .leading, size: 23,recordings: [Recording(), Recording(), Recording()])
+    @State var script = Script(title: "HOHO",text: "rtfgv dftcg fghgc cgbv" + .longText, textAlignment: .leading, size: 23,recordings: [Recording(scriptId: "0", path: "lasso"), Recording(scriptId: "1", path: "folder.fill"), Recording(scriptId: "2", path: "mic")])
     
     var body: some View {
-        let customScroll = AnimatorViewRepresentable(playing: $play, script: x)
+        let customScroll = AnimatorViewRepresentable(playing: $play, script: script)
         return VStack(spacing: 0) {
             
             GeometryReader { geo in
@@ -52,6 +52,8 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        NavigationView {
+            ContentView()
+        }
     }
 }
